@@ -1,0 +1,1109 @@
+Public item As Long
+Public desc As String
+Public upc As Double
+Public cust As Integer
+Public stoptimer As Boolean
+Public starttimer As Boolean
+Public endtime As Double
+Public z As Integer
+Public y As Integer
+Public minutes As Double
+
+
+
+
+
+Private Sub ComboBox1_Change()
+
+End Sub
+
+Private Sub ComboBox3_Change()
+
+End Sub
+
+Private Sub CommandButton10_Click()
+Me.Repaint
+Call startbutton
+
+
+End Sub
+Sub startbutton()
+
+
+Dim endrow As Integer
+Dim timer As Double
+Dim x As Integer
+Dim duration As Double
+Dim taktstamp As Double
+Dim takttime As Double
+Dim endrow2 As Integer
+Dim name As String
+Dim i As Integer
+
+'checks to see if the form has takt time data.  If not, redirects the form to userform3
+If Me.Label16.Caption = "No User Selected" Then
+    MsgBox ("Please select a TM from the list")
+    Unload UserForm1
+    UserForm3.Show
+Else
+End If
+
+
+'finds the TM name and finds the row
+endrow2 = Sheet4.Range("c65536").End(xlUp).Row
+
+For i = 2 To endrow2
+    
+    If Sheet4.Range("C" & i).Text = Me.Label16.Caption Then
+    Exit For
+    Else
+    End If
+
+Next i
+
+Me.CommandButton14.Enabled = True
+Me.CommandButton11.Enabled = True
+
+endrow = Sheet5.Range("A65536").End(xlUp).Row + 1
+
+stoptimer = False
+If Me.CommandButton10.Caption = "Start" Then
+    With Sheet5
+    .Range("A" & endrow).Value = Now()
+    .Range("B" & endrow).Value = "SHIFTSTART"
+    .Range("C" & endrow).Value = 0
+    .Range("D" & endrow).Value = Me.Label16.Caption
+    .Range("E" & endrow).Value = 0
+    End With
+
+ElseIf starttimer = True Then
+       
+     With Sheet5
+     
+    .Range("A" & endrow).Value = Now()
+    .Range("B" & endrow).Value = "BREAKEND"
+    .Range("C" & endrow).Value = Sheet5.Range("A" & endrow).Value - Sheet5.Range("A" & endrow - 1).Value
+    .Range("D" & endrow).Value = Me.Label16.Caption
+    .Range("E" & endrow).Value = 0
+    End With
+Else
+End If
+If starttimer = False Then
+
+'the following will reset the clock and log the unit
+    If Me.CommandButton10.Caption = "UNIT COMPLETE" Then
+        stoptimer = True
+        
+        'this if statement calculates the CT for each unit and stores it in duration, depending
+        'if it went overtakt or not.  If z = 2 this means we are overtakt
+        
+        
+            If z = 2 Then
+                duration = TimeValue(Me.TextBox1.Value) + TimeValue(VBA.Format(minutes, "h:mm:ss"))
+                
+            Else
+                duration = TimeValue(VBA.Format(minutes, "h:mm:ss")) - TimeValue(Me.TextBox1.Value)
+            
+            End If
+        
+    With Sheet5
+     
+    .Range("A" & endrow).Value = Now()
+    .Range("B" & endrow).Value = "UNIT COMPLETE"
+    .Range("C" & endrow).Value = duration
+    .Range("D" & endrow).Value = Me.Label16.Caption
+    .Range("E" & endrow).Value = 1
+    
+    End With
+    
+        
+    Else
+    End If
+Me.TextBox1.Value = ""
+z = 1
+Else
+End If
+
+If starttimer <> True Then
+    
+    
+    Me.TextBox1.Value = ""
+    stoptimer = True
+      
+Else
+
+End If
+stoptimer = False
+starttimer = False
+
+'i is used to identify the row of the TM.
+'sets the goal
+Me.TextBox3.Value = Sheet4.Range("A" & i).Value
+'sets the takt
+takttime = Sheet4.Range("B" & i).Value / Me.TextBox3.Value
+Me.TextBox2.Value = Application.WorksheetFunction.Sum(Sheet5.Columns("E:E"))
+
+'takttime = Format((Sheet4.Range("B2").Value / Me.TextBox3.Value) / 1440, "h:mm:ss")
+'minutes = TimeValue(Format(takttime / 1440, "h:mm:ss"))
+minutes = TimeValue(VBA.Format(takttime / 1440, "h:mm:SS"))
+
+If Me.TextBox1.Value Like "#:##:##" Then
+
+    If Me.TextBox1.Value < VBA.Format(minutes, "h:mm:ss") Then
+    minutes = TimeValue(Me.TextBox1.Value)
+    Else
+    
+    End If
+
+Else
+    Me.TextBox1.Value = VBA.Format(minutes, "h:mm:ss")
+End If
+endtime = 0
+x = 1
+
+'this diverts the code to the countup timer if the user hit break during countup
+If z = 2 Then
+    GoTo countup
+Else
+End If
+
+'this is the countdown timer
+If taktstamp <= 0 Then
+
+    Do
+        Do While x = 1
+            Me.CommandButton10.Caption = "UNIT COMPLETE"
+            z = 1
+            y = 1
+            x = 2
+        Loop
+        '1.157 x 10 ^ -5 = 1 second in excel decimal time
+    
+        If Me.TextBox1.Value > "0:00:01" Then
+            'runs the countdown clock
+            If endtime - Now < 0 Then
+                endtime = Now + minutes
+            End If
+                
+                Me.TextBox1.Value = VBA.Format(endtime - Now, "h:mm:ss")
+                timer = TimeValue(Me.TextBox1.Value)
+            
+      'MsgBox (TimeValue(Me.TextBox1.Value))
+            Else
+            z = 2
+        Exit Do
+        
+        End If
+    
+        DoEvents
+        
+    Loop Until stoptimer
+    
+    'the following will allow for the code to start counting up if z = 2
+    
+    If z = 1 Then
+        Exit Sub
+    Else
+    End If
+
+
+Else
+End If
+
+countup:
+    Do
+'use a single loop within the loop to hold the taktstamp variable
+
+
+        Do While y = 1
+            taktstamp = Now
+            y = 2
+        Loop
+    
+'starts the count up
+        Me.TextBox1.Value = VBA.Format(Now - taktstamp, "h:mm:ss")
+    
+    DoEvents
+    Loop Until stoptimer
+
+
+       
+              
+
+End Sub
+Private Sub CommandButton11_Click()
+Dim endrow As Integer
+endrow = Sheet5.Range("A65536").End(xlUp).Row + 1
+
+If Me.CommandButton11.Caption = "BREAK" Then
+
+With Sheet5
+     
+    .Range("A" & endrow).Value = Now()
+    .Range("B" & endrow).Value = "BREAKSTART"
+    .Range("C" & endrow).Value = 0
+    .Range("D" & endrow).Value = Me.Label16.Caption
+    .Range("E" & endrow).Value = 0
+End With
+
+stoptimer = True
+endtime = Now()
+Me.CommandButton11.Caption = "END BREAK"
+Me.CommandButton11.BackColor = vbGreen
+Me.CommandButton13.Enabled = True
+Me.CommandButton10.Enabled = False
+starttimer = False
+
+Else
+Me.CommandButton11.Caption = "BREAK"
+Me.CommandButton10.Enabled = True
+Me.CommandButton11.BackColor = vbRed
+Me.CommandButton13.Enabled = False
+
+starttimer = True
+
+Call startbutton
+
+End If
+
+End Sub
+
+Private Sub CommandButton13_Click()
+Dim endrow1 As Integer
+Dim endrow2 As Integer
+Dim result As Integer
+
+On Error GoTo err_handler:
+
+result = MsgBox("Are you sure you want to end the shift?", vbYesNo)
+
+If result = vbNo Then
+    Exit Sub
+Else
+End If
+
+
+
+    endrow1 = Sheet5.Range("A65536").End(xlUp).Row
+    endrow2 = Sheet6.Range("A65536").End(xlUp).Row
+
+If endrow1 = 1 Then
+    endrow1 = 2
+Else
+End If
+
+    Sheet5.Range("A2:I" & endrow1).Cut _
+    Destination:=Sheet6.Range("A" & endrow2 + 1)
+
+Unload UserForm1
+UserForm1.Show
+UserForm1.Hide
+
+UserForm3.Show
+
+
+Exit Sub
+
+err_handler:
+MsgBox "Error occurred in program.  Verify data was actually transferred to the datadump spreadsheet"
+
+End Sub
+
+Private Sub CommandButton14_Click()
+
+If Application.WorksheetFunction.Sum(Sheet5.Columns("E:E")) < 2 Then
+    MsgBox "The last unit cannot be removed"
+    Exit Sub
+    Else
+End If
+
+Dim endrow As Integer
+Dim i As Integer
+'the following command changes the "unit complete" to "removed" and "1" to "0"
+endrow = Sheet5.Range("A65536").End(xlUp).Row + 1
+If endrow <> 2 Then
+For i = 2 To endrow
+    
+    If Sheet5.Range("E" & endrow - i).Value = 1 Then
+    
+    With Sheet5
+        .Range("B" & endrow - i).Value = "REMOVED"
+        .Range("E" & endrow - i).Value = 0
+    End With
+        Exit For
+    
+    
+    
+    Else
+    End If
+    
+Next i
+Else
+End If
+
+Me.TextBox2.Value = Application.WorksheetFunction.Sum(Sheet5.Columns("E:E"))
+
+End Sub
+Private Sub Label4_Click()
+
+With Me.Label4
+
+  If .BackColor = vbGreen Then
+  cust = 2
+  .BackColor = vbRed
+  .Caption = "WWG"
+  ElseIf .BackColor = vbRed Then
+  cust = 1
+  .BackColor = vbYellow
+  .Caption = "EDP"
+  ElseIf .BackColor = vbYellow Then
+  cust = 0
+  .BackColor = vbGreen
+  .Caption = "NORM"
+     
+  End If
+End With
+
+identifier (cust)
+
+End Sub
+
+Function identifier(x As Integer) As Variant
+Dim l_row As Integer
+Dim i As Integer
+Dim log() As Variant
+Dim a As Integer
+Dim b As Integer
+
+
+l_row = Sheet2.Range("A65536").End(xlUp).Row
+
+ReDim log(1 To l_row, 1 To l_row) As Variant
+a = 1
+b = 2
+'finds normal non-wwg/edp units
+If x = 0 Then
+
+    For i = 2 To l_row
+            If Sheet2.Cells(i, 4) + Sheet2.Cells(i, 5) = 0 Then
+                
+                
+                log(a, 1) = Sheet2.Range("A" & i)
+                log(a, 2) = Sheet2.Range("B" & i)
+               
+                a = a + 1
+                
+            Else
+            End If
+       
+    Next i
+    
+    
+'cust = edp if x=1
+ElseIf x = 1 Then
+
+    For i = 2 To l_row
+            If Sheet2.Cells(i, 5) = 1 Then
+                
+                
+                 log(a, 1) = Sheet2.Range("A" & i)
+                log(a, 2) = Sheet2.Range("B" & i)
+                
+                a = a + 1
+            Else
+            End If
+       
+    Next i
+    
+'cust = wwg if x=2
+ElseIf x = 2 Then
+
+    For i = 2 To l_row
+            If Sheet2.Cells(i, 4) = 1 Then
+                
+                 log(a, 1) = Sheet2.Range("A" & i)
+                log(a, 2) = Sheet2.Range("B" & i)
+                
+                a = a + 1
+                
+            Else
+            End If
+       
+    Next i
+    
+Else
+End If
+
+identifier = log
+
+With Me.ComboBox1
+.ColumnCount = 2
+.BoundColumn = 1
+.ColumnWidths = ".75 in; 1 in"
+.List = log
+End With
+
+
+Dim array_1 As Variant
+array_1 = Sheet2.Range("A2:F" & l_row)
+
+Dim j As Integer
+If cust = 0 Then
+
+    For j = 2 To l_row
+    
+        If Sheet2.Cells(j, 7) = 0 Then
+            If Sheet2.Cells(j, 4) = 0 Then
+                If Sheet2.Cells(j, 5) = 0 Then
+                
+                'commmand button 1
+                    If Sheet2.Cells(j, 6) = 1 Then
+                        CommandButton1.Caption = Sheet2.Cells(j, 2)
+                        Label5.Caption = Sheet2.Cells(j, 1)
+                        CommandButton1.BackColor = vbGreen
+                        
+                   'commandbutton2
+                    ElseIf Sheet2.Cells(j, 6) = 2 Then
+                        CommandButton2.Caption = Sheet2.Cells(j, 2)
+                        Label6.Caption = Sheet2.Cells(j, 1)
+                        CommandButton2.BackColor = vbGreen
+                    'commandbutton5
+                    ElseIf Sheet2.Cells(j, 6) = 3 Then
+                        CommandButton5.Caption = Sheet2.Cells(j, 2)
+                        Label7.Caption = Sheet2.Cells(j, 1)
+                        CommandButton5.BackColor = vbGreen
+                    'commandbutton4
+                    ElseIf Sheet2.Cells(j, 6) = 4 Then
+                        CommandButton3.Caption = Sheet2.Cells(j, 2)
+                        Label8.Caption = Sheet2.Cells(j, 1)
+                        CommandButton3.BackColor = vbGreen
+                     'commandbutton5
+                    ElseIf Sheet2.Cells(j, 6) = 5 Then
+                        CommandButton4.Caption = Sheet2.Cells(j, 2)
+                        Label9.Caption = Sheet2.Cells(j, 1)
+                        CommandButton4.BackColor = vbGreen
+                    Else
+                    
+                    End If
+                
+                Else
+                
+                    
+                End If
+            Else
+            End If
+        Else
+        End If
+    
+    Next j
+
+ElseIf cust = 1 Then
+    For j = 2 To l_row
+        
+            If Sheet2.Cells(j, 7) = 0 Then
+                If Sheet2.Cells(j, 4) = 0 Then
+                    If Sheet2.Cells(j, 5) = 1 Then
+                    
+                    'commmand button 1
+                        If Sheet2.Cells(j, 6) = 1 Then
+                            CommandButton1.Caption = Sheet2.Cells(j, 2)
+                            Label5.Caption = Sheet2.Cells(j, 1)
+                            CommandButton1.BackColor = vbYellow
+                            
+                       'commandbutton2
+                        ElseIf Sheet2.Cells(j, 6) = 2 Then
+                            CommandButton2.Caption = Sheet2.Cells(j, 2)
+                            Label6.Caption = Sheet2.Cells(j, 1)
+                            CommandButton2.BackColor = vbYellow
+                        'commandbutton5
+                        ElseIf Sheet2.Cells(j, 6) = 3 Then
+                            CommandButton5.Caption = Sheet2.Cells(j, 2)
+                            Label7.Caption = Sheet2.Cells(j, 1)
+                            CommandButton5.BackColor = vbYellow
+                        'commandbutton4
+                        ElseIf Sheet2.Cells(j, 6) = 4 Then
+                            CommandButton3.Caption = Sheet2.Cells(j, 2)
+                            Label8.Caption = Sheet2.Cells(j, 1)
+                            CommandButton3.BackColor = vbYellow
+                         'commandbutton5
+                        ElseIf Sheet2.Cells(j, 6) = 5 Then
+                            CommandButton4.Caption = Sheet2.Cells(j, 2)
+                            Label9.Caption = Sheet2.Cells(j, 1)
+                            CommandButton4.BackColor = vbYellow
+                        Else
+                        
+                        End If
+                    
+                    Else
+                    
+                        
+                    End If
+                Else
+                End If
+            Else
+            End If
+        
+        Next j
+        
+ElseIf cust = 2 Then
+
+For j = 2 To l_row
+        
+            If Sheet2.Cells(j, 7) = 0 Then
+                If Sheet2.Cells(j, 4) = 1 Then
+                    If Sheet2.Cells(j, 5) = 0 Then
+                    
+                    'commmand button 1
+                        If Sheet2.Cells(j, 6) = 1 Then
+                            CommandButton1.Caption = Sheet2.Cells(j, 2)
+                            Label5.Caption = Sheet2.Cells(j, 1)
+                            CommandButton1.BackColor = vbRed
+                            
+                       'commandbutton2
+                        ElseIf Sheet2.Cells(j, 6) = 2 Then
+                            CommandButton2.Caption = Sheet2.Cells(j, 2)
+                            Label6.Caption = Sheet2.Cells(j, 1)
+                            CommandButton2.BackColor = vbRed
+                        'commandbutton5
+                        ElseIf Sheet2.Cells(j, 6) = 3 Then
+                            CommandButton5.Caption = Sheet2.Cells(j, 2)
+                            Label7.Caption = Sheet2.Cells(j, 1)
+                            CommandButton5.BackColor = vbRed
+                        'commandbutton4
+                        ElseIf Sheet2.Cells(j, 6) = 4 Then
+                            CommandButton3.Caption = Sheet2.Cells(j, 2)
+                            Label8.Caption = Sheet2.Cells(j, 1)
+                            CommandButton3.BackColor = vbRed
+                         'commandbutton5
+                        ElseIf Sheet2.Cells(j, 6) = 5 Then
+                            CommandButton4.Caption = Sheet2.Cells(j, 2)
+                            Label9.Caption = Sheet2.Cells(j, 1)
+                            CommandButton4.BackColor = vbRed
+                        Else
+                        
+                        End If
+                    
+                    Else
+                    
+                        
+                    End If
+                Else
+                End If
+            Else
+            End If
+        
+        Next j
+End If
+
+
+
+End Function
+
+Private Sub UserForm_Initialize()
+
+
+'Dim myArray1 As Variant
+'Dim myArray2 As Variant
+Dim myarray3 As Variant
+'loads the arrays
+'myArray1 = Worksheets(2).Range("a2:b10")
+'myArray2 = Worksheets(2).Range("a2:b10")
+myarray3 = Worksheets(2).Range("c2:c11")
+'sets the label to green - aka no-wwg
+Me.Label4.BackColor = vbGreen
+Me.Label4.Caption = "NORM"
+
+cust = 0
+identifier (cust)
+
+'sets the source for combobox1
+
+'With Me.ComboBox1
+'.ColumnCount = 2
+'.BoundColumn = 1
+'.ColumnWidths = "1.25 in; 2.5 in"
+'.List = myArray1
+'End With
+
+'sets the source for combobox3
+
+
+With Me.ComboBox3
+.ColumnCount = 1
+.BoundColumn = 1
+.ColumnWidths = ".5 in"
+.List = myarray3
+End With
+
+End Sub
+
+
+Private Sub CommandButton1_Click()
+Dim x As Long
+Dim y As Long
+
+x = Label5.Caption
+y = rowid(x)
+item = Label5.Caption
+desc = CommandButton1.Caption
+upc = Sheet1.Cells(y, 2).Value
+
+printtagshield (1)
+
+Dim btApp As BarTender.Application
+Dim btFormat As BarTender.Format
+Dim btQueryPrompt As BarTender.QueryPrompt
+
+Set btApp = New BarTender.Application
+Set btFormat = New BarTender.Format
+
+btApp.Visible = False
+
+'Open a BarTender label format
+
+'RED TELLS US ITS A WWG LABEL
+If Me.CommandButton1.BackColor <> vbRed Then
+
+    btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\POPLABEL_NO_SERIAL_NO_test.btw"
+
+Else
+     btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\WWG_POPLABEL.BTW"
+    y = rowid_wwg(x)
+    btApp.ActiveFormat.NamedSubStrings("model").Value = Sheet3.Cells(y, 2).Value
+    btApp.ActiveFormat.NamedSubStrings("pn").Value = Sheet3.Cells(y, 1).Value
+    btApp.ActiveFormat.NamedSubStrings("wwg").Value = Sheet3.Cells(y, 3).Value
+    
+        btFormats = btApp.ActiveFormat.PrintOut(False, False)
+    
+    
+    btApp.Quit
+    Me.ComboBox1.Value = item
+    Exit Sub
+    
+End If
+
+'Set the value of the query prompt
+
+btApp.ActiveFormat.NamedSubStrings("itemno").Value = item
+btApp.ActiveFormat.NamedSubStrings("sn").Value = upc
+btApp.ActiveFormat.NamedSubStrings("desc").Value = desc
+btApp.ActiveFormat.NamedSubStrings("ean").Value = "00" & upc
+
+'Dim j As Integer
+    'For j = 1 To 22
+    
+        btFormats = btApp.ActiveFormat.PrintOut(False, False)
+    'Next j
+    
+'btFormats = btApp.ActiveFormat.PrintOut(False, False)
+'printing
+btApp.Quit
+Me.ComboBox1.Value = item
+
+End Sub
+Function rowid_wwg(x As Long)
+Dim RngCol As Range
+Dim i As Range
+Dim lrow As Long
+Dim a As Long
+
+
+lrow = Sheet3.Range("A65536").End(xlUp).Row
+
+For a = 1 To lrow
+    If Sheet3.Range("A" & a) = x Then
+        rowid_wwg = a
+        Exit Function
+        
+    Else
+        
+    End If
+    
+Next a
+End Function
+
+Function rowid(x As Long)
+Dim RngCol As Range
+Dim i As Range
+Dim lrow As Long
+Dim a As Long
+
+
+'the following is a function which searches for the rowid of the input value
+lrow = Sheet1.Range("A65536").End(xlUp).Row
+
+For a = 1 To lrow
+    If Sheet1.Range("A" & a) = x Then
+        rowid = a
+        Exit Function
+        
+    Else
+        
+    End If
+    
+Next a
+
+
+
+End Function
+
+
+Private Sub CommandButton2_Click()
+Dim x As Long
+Dim y As Long
+Dim model As String
+
+
+
+x = Label6.Caption
+
+y = rowid(x)
+item = Label6.Caption
+desc = CommandButton2.Caption
+upc = Sheet1.Cells(y, 2).Value
+
+'prints the tag shield label
+printtagshield (1)
+
+Dim btApp As BarTender.Application
+Dim btFormat As BarTender.Format
+Dim btQueryPrompt As BarTender.QueryPrompt
+
+Set btApp = New BarTender.Application
+Set btFormat = New BarTender.Format
+
+btApp.Visible = False
+
+'Open a BarTender label format
+
+'RED TELLS US ITS A WWG LABEL
+If Me.CommandButton2.BackColor <> vbRed Then
+
+    btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\POPLABEL_NO_SERIAL_NO_test.btw"
+
+Else
+    btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\WWG_POPLABEL.BTW"
+    y = rowid_wwg(x)
+    btApp.ActiveFormat.NamedSubStrings("model").Value = Sheet3.Cells(y, 2).Value
+    btApp.ActiveFormat.NamedSubStrings("pn").Value = Sheet3.Cells(y, 1).Value
+    btApp.ActiveFormat.NamedSubStrings("wwg").Value = Sheet3.Cells(y, 3).Value
+    btFormats = btApp.ActiveFormat.PrintOut(False, False)
+    btApp.Quit
+    Me.ComboBox1.Value = item
+    Exit Sub
+    
+    
+End If
+
+'Set the value of the query prompt
+
+btApp.ActiveFormat.NamedSubStrings("itemno").Value = item
+btApp.ActiveFormat.NamedSubStrings("sn").Value = upc
+btApp.ActiveFormat.NamedSubStrings("desc").Value = desc
+btApp.ActiveFormat.NamedSubStrings("ean").Value = "00" & upc
+
+
+btFormats = btApp.ActiveFormat.PrintOut(False, False)
+btApp.Quit
+Me.ComboBox1.Value = item
+End Sub
+
+Private Sub CommandButton3_Click()
+Dim x As Long
+Dim y As Long
+
+x = Label8.Caption
+y = rowid(x)
+item = Label8.Caption
+desc = CommandButton3.Caption
+upc = Sheet1.Cells(y, 2).Value
+
+printtagshield (1)
+
+Dim btApp As BarTender.Application
+Dim btFormat As BarTender.Format
+Dim btQueryPrompt As BarTender.QueryPrompt
+
+Set btApp = New BarTender.Application
+Set btFormat = New BarTender.Format
+
+btApp.Visible = False
+
+'Open a BarTender label format
+
+'RED TELLS US ITS A WWG LABEL
+If Me.CommandButton3.BackColor <> vbRed Then
+
+    btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\POPLABEL_NO_SERIAL_NO_test.btw"
+
+Else
+    btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\WWG_POPLABEL.BTW"
+    y = rowid_wwg(x)
+    btApp.ActiveFormat.NamedSubStrings("model").Value = Sheet3.Cells(y, 2).Value
+    btApp.ActiveFormat.NamedSubStrings("pn").Value = Sheet3.Cells(y, 1).Value
+    btApp.ActiveFormat.NamedSubStrings("wwg").Value = Sheet3.Cells(y, 3).Value
+    btFormats = btApp.ActiveFormat.PrintOut(False, False)
+    btApp.Quit
+    Me.ComboBox1.Value = item
+    Exit Sub
+    
+End If
+
+'Set the value of the query prompt
+
+btApp.ActiveFormat.NamedSubStrings("itemno").Value = item
+btApp.ActiveFormat.NamedSubStrings("sn").Value = upc
+btApp.ActiveFormat.NamedSubStrings("desc").Value = desc
+btApp.ActiveFormat.NamedSubStrings("ean").Value = "00" & upc
+
+
+btFormats = btApp.ActiveFormat.PrintOut(False, False)
+btApp.Quit
+Me.ComboBox1.Value = item
+End Sub
+
+Private Sub CommandButton4_Click()
+Dim x As Long
+Dim y As Long
+
+x = Label9.Caption
+y = rowid(x)
+item = Label9.Caption
+desc = CommandButton4.Caption
+upc = Sheet1.Cells(y, 2).Value
+
+printtagshield (1)
+Dim btApp As BarTender.Application
+Dim btFormat As BarTender.Format
+Dim btQueryPrompt As BarTender.QueryPrompt
+
+Set btApp = New BarTender.Application
+Set btFormat = New BarTender.Format
+
+btApp.Visible = False
+
+'Open a BarTender label format
+
+'RED TELLS US ITS A WWG LABEL
+If Me.CommandButton4.BackColor <> vbRed Then
+
+    btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\POPLABEL_NO_SERIAL_NO_test.btw"
+
+Else
+     btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\WWG_POPLABEL.BTW"
+    y = rowid_wwg(x)
+    btApp.ActiveFormat.NamedSubStrings("model").Value = Sheet3.Cells(y, 2).Value
+    btApp.ActiveFormat.NamedSubStrings("pn").Value = Sheet3.Cells(y, 1).Value
+    btApp.ActiveFormat.NamedSubStrings("wwg").Value = Sheet3.Cells(y, 3).Value
+    btFormats = btApp.ActiveFormat.PrintOut(False, False)
+    btApp.Quit
+    Me.ComboBox1.Value = item
+    Exit Sub
+    
+End If
+
+'Set the value of the query prompt
+
+btApp.ActiveFormat.NamedSubStrings("itemno").Value = item
+btApp.ActiveFormat.NamedSubStrings("sn").Value = upc
+btApp.ActiveFormat.NamedSubStrings("desc").Value = desc
+btApp.ActiveFormat.NamedSubStrings("ean").Value = "00" & upc
+
+
+btFormats = btApp.ActiveFormat.PrintOut(False, False)
+btApp.Quit
+Me.ComboBox1.Value = item
+End Sub
+
+Private Sub CommandButton5_Click()
+
+Dim x As Long
+Dim y As Long
+
+x = Label7.Caption
+y = rowid(x)
+item = Label7.Caption
+desc = CommandButton5.Caption
+upc = Sheet1.Cells(y, 2).Value
+
+printtagshield (1)
+Dim btApp As BarTender.Application
+Dim btFormat As BarTender.Format
+Dim btQueryPrompt As BarTender.QueryPrompt
+
+Set btApp = New BarTender.Application
+Set btFormat = New BarTender.Format
+
+btApp.Visible = False
+
+'Open a BarTender label format
+
+'RED TELLS US ITS A WWG LABEL
+If Me.CommandButton5.BackColor <> vbRed Then
+
+    btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\POPLABEL_NO_SERIAL_NO_test.btw"
+
+Else
+     btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\WWG_POPLABEL.BTW"
+    y = rowid_wwg(x)
+    btApp.ActiveFormat.NamedSubStrings("model").Value = Sheet3.Cells(y, 2).Value
+    btApp.ActiveFormat.NamedSubStrings("pn").Value = Sheet3.Cells(y, 1).Value
+    btApp.ActiveFormat.NamedSubStrings("wwg").Value = Sheet3.Cells(y, 3).Value
+    btFormats = btApp.ActiveFormat.PrintOut(False, False)
+    btApp.Quit
+    Me.ComboBox1.Value = item
+    Exit Sub
+    
+End If
+
+'Set the value of the query prompt
+
+btApp.ActiveFormat.NamedSubStrings("itemno").Value = item
+btApp.ActiveFormat.NamedSubStrings("sn").Value = upc
+btApp.ActiveFormat.NamedSubStrings("desc").Value = desc
+btApp.ActiveFormat.NamedSubStrings("ean").Value = "00" & upc
+
+
+btFormats = btApp.ActiveFormat.PrintOut(False, False)
+btApp.Quit
+Me.ComboBox1.Value = item
+End Sub
+
+Private Sub CommandButton6_Click()
+
+
+Dim x As Long
+Dim y As Long
+If Me.ComboBox1.Value = "" Then
+    MsgBox "Please select a model"
+    Me.ComboBox1.SetFocus
+    Exit Sub
+ElseIf Me.ComboBox3.Value = "" Then
+    MsgBox "Please select quantity per multi-pack"
+    Me.ComboBox3.SetFocus
+    Exit Sub
+
+End If
+
+x = ComboBox1.Value
+y = rowid(x)
+If y = 0 Then
+MsgBox "Item was not found.  Please contact your supervisor"
+Exit Sub
+Else
+End If
+
+
+item = Sheet1.Cells(y, 1).Value
+desc = Sheet1.Cells(y, 3).Value
+upc = Sheet1.Cells(y, 2).Value
+
+'printtagshield
+Dim btApp As BarTender.Application
+Dim btFormat As BarTender.Format
+Dim btQueryPrompt As BarTender.QueryPrompt
+
+Set btApp = New BarTender.Application
+Set btFormat = New BarTender.Format
+
+btApp.Visible = False
+
+If Me.Label4.BackColor <> vbRed Then
+        
+        'Open a BarTender label format for non wwg labels
+        
+        btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\MULTI-PACK.btw"
+        
+        'Set the value of the query prompt
+        
+        btApp.ActiveFormat.NamedSubStrings("itemno").Value = Me.ComboBox1.Value
+        btApp.ActiveFormat.NamedSubStrings("upc").Value = upc
+        btApp.ActiveFormat.NamedSubStrings("QTY").Value = Me.ComboBox3.Value
+        btApp.ActiveFormat.NamedSubStrings("desc").Value = desc
+
+Else
+        'prints the wwg format
+        btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\WWG_MULTI-PACK1.BTW"
+    y = rowid_wwg(x)
+    btApp.ActiveFormat.NamedSubStrings("model").Value = Sheet3.Cells(y, 2).Value
+    btApp.ActiveFormat.NamedSubStrings("pn").Value = Sheet3.Cells(y, 1).Value
+    btApp.ActiveFormat.NamedSubStrings("wwg").Value = Sheet3.Cells(y, 3).Value
+    btApp.ActiveFormat.NamedSubStrings("QTY").Value = Me.ComboBox3.Value
+    
+    btFormats = btApp.ActiveFormat.PrintOut(False, False)
+    btApp.Quit
+    Exit Sub
+
+End If
+
+
+btFormats = btApp.ActiveFormat.PrintOut(False, False)
+btApp.Quit
+
+End Sub
+
+Private Sub CommandButton7_Click()
+Dim x As Long
+Dim y As Long
+
+x = Me.ComboBox2.Value
+y = rowid(x)
+item = Sheet1.Cells(y, 1).Value
+desc = Sheet1.Cells(y, 3).Value
+upc = Sheet1.Cells(y, 2).Value
+
+printtagshield (1)
+Dim btApp As BarTender.Application
+Dim btFormat As BarTender.Format
+Dim btQueryPrompt As BarTender.QueryPrompt
+
+Set btApp = New BarTender.Application
+Set btFormat = New BarTender.Format
+
+btApp.Visible = False
+
+'Open a BarTender label format
+'RED TELLS US ITS A WWG LABEL
+If Me.CommandButton7.BackColor <> vbRed Then
+
+    btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\POPLABEL_NO_SERIAL_NO_test.btw"
+
+Else
+    btApp.Formats.Open "C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\WWG_POPLABEL.BTW"
+End If
+'Set the value of the query prompt
+
+btApp.ActiveFormat.NamedSubStrings("itemno").Value = item
+btApp.ActiveFormat.NamedSubStrings("sn").Value = upc
+btApp.ActiveFormat.NamedSubStrings("desc").Value = desc
+btApp.ActiveFormat.NamedSubStrings("ean").Value = "00" & upc
+
+
+btFormats = btApp.ActiveFormat.PrintOut(False, False)
+btApp.Quit
+Me.ComboBox1.Value = item
+End Sub
+
+Private Sub CommandButton8_Click()
+On Error Resume Next
+
+printtagshield (10)
+
+End Sub
+
+Private Sub UserForm_Click()
+Application.Visible = False
+End Sub
+
+Sub printing()
+UserForm2.Show
+
+End Sub
+
+'Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+'Application.Workbooks(1).Close True
+
+
+
+'End Sub
+
