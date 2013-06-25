@@ -12,7 +12,8 @@ In a high volume production system, this adds up to serious $ and time.  With th
 for most labels. 
 
 What does this do?  
-This is a program which would be used in a one person production cell to monitor progress and keep production at a certain speed.
+This is a program which would be used in a one person production cell to monitor progress, automate printing
+and keep production at a certain speed.
 Users login, and hit start.  This program was designed to automate printing and show a visual of how ahead or behind they
 are in their day. The TM's goal is displayed and it tracks how many units have been completed.  Admin's can edit the goal
 in the spreadsheet "Goals".  In addition, Admins can monitor the progress and run reports/stats on the data provided in 
