@@ -1,6 +1,7 @@
 excel-bartender-printer-llama
 =============================
-**this was submitted as a code sample for a Code Fellows application 
+**this was submitted as a code sample for a Code Fellows application.  The working version did not use the takt clock - ie
+I didn't get around to implementing this version, so in a CYA move, there are likely some bugs in the bed. 
 
 This code runs with a specific userform.  The entire package can be found here:
 
