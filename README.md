@@ -3,7 +3,8 @@ excel-bartender-printer-llama
 **this was submitted as a code sample for a Code Fellows application.  The working version did not use the takt clock - ie
 I didn't get around to implementing this version, so in a CYA move, there are likely some bugs in the bed. 
 
-This code runs with a specific userform.  The entire package can be found here:
+This code runs with a specific userform.  The entire package can be found and downloaded here:
+https://docs.google.com/file/d/0BwDr8PN7RrULQXVSTHJvdWJCSVU/edit?usp=sharing
 
 What does this do?  
 This is a program which would be used in a one person production cell to monitor progress and keep production at a certain speed.
