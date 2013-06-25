@@ -3,8 +3,13 @@ excel-takt-bartender-VBA-Autoprinter-llama
 **this was submitted as a code sample for a Code Fellows application.  The working version did not use the takt clock - ie
 I didn't get around to implementing this version, so in a CYA move, there are likely some bugs in the bed. 
 
-This code runs with a specific userform.  The entire package can be found and downloaded here:
+This code runs with a specific userform.  The entire package can be found and downloaded here.  Enable all content. 
 https://docs.google.com/file/d/0BwDr8PN7RrULQXVSTHJvdWJCSVU/edit?usp=sharing
+
+Why did I create this?
+I created this program because production workers were spending ~30 sec to 1 min manually selecting parameters and printing labels.
+In a high volume production system, this adds up to serious $ and time.  With this program, this process takes less than 2 sec
+for most labels. 
 
 What does this do?  
 This is a program which would be used in a one person production cell to monitor progress and keep production at a certain speed.
