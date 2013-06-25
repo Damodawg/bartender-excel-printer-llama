@@ -1,0 +1,23 @@
+Sub printtagshield(x As Integer)
+Dim i As Integer
+
+Dim btApp As BarTender.Application
+Dim btFormat As BarTender.Format
+ 
+Set btApp = New BarTender.Application
+Set btFormat = New BarTender.Format
+ 
+btApp.Formats.Open ("C:\Users\Raylabel\Desktop\Intermec Printer\bartender 9.4\hawktagshield_test.btw")
+ 
+btApp.Visible = False
+For i = 1 To x
+
+    btApp.ActiveFormat.IdenticalCopiesOfLabel = 1
+    btFormats = btApp.ActiveFormat.PrintOut(False, False)
+Next i
+
+btApp.Quit (btSaveChanges)
+
+
+End Sub
+
