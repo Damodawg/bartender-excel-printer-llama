@@ -1,0 +1,36 @@
+Private Sub ComboBox1_Change()
+
+End Sub
+
+Private Sub CommandButton1_Click()
+Dim name As String
+name = Me.ComboBox1.Value
+
+UserForm1.Label16.Caption = name
+UserForm3.Hide
+UserForm1.Show
+
+
+End Sub
+
+Private Sub UserForm_Click()
+
+End Sub
+
+Private Sub UserForm_Initialize()
+Dim endrow As Integer
+Dim name As Range
+Dim i As Integer
+
+endrow = Sheet4.Range("C65536").End(xlUp).Row
+For i = 2 To endrow
+    Me.ComboBox1.AddItem (Sheet4.Range("C" & i).Value)
+    
+Next i
+End Sub
+'Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+'Application.Workbooks(1).Close True
+
+
+
+'End Sub
