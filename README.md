@@ -1,4 +1,4 @@
-excel-takt-bartender-VBA-Autoprinter-llama
+excel-taktclock-bartender-VBA-Autoprinter-llama
 =============================
 **this was submitted as a code sample for a Code Fellows application.  The working version did not use the takt clock - ie
 I didn't get around to implementing this version, so in a CYA move, there are likely some bugs in the bed. 
@@ -13,7 +13,9 @@ for most labels.
 
 What does this do?  
 This is a program which would be used in a one person production cell to monitor progress, automate printing
-and keep production at a certain speed.
+and keep production at a certain speed (on takt).  Here's a wiki page on takt time http://en.wikipedia.org/wiki/Takt_time .  In summary
+takt is the amount of time a station has to complete its work in order to satisfy the rate of customer demand.  
+
 Users login, and hit start.  This program was designed to automate printing and show a visual of how ahead or behind they
 are in their day. The TM's goal is displayed and it tracks how many units have been completed.  Admin's can edit the goal
 in the spreadsheet "Goals".  In addition, Admins can monitor the progress and run reports/stats on the data provided in 
